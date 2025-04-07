@@ -115,10 +115,23 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ## 👥 Team
 
-- [Your Name] - Lead Developer
-- [Team Member 2] - Backend Developer
-- [Team Member 3] - DevOps Engineer
+- [Manuel Ernesto Murillo Arce] - Lead Developer
+- [Ernesto Murillo] - Backend Developer
+- [Manuel Erneeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee] - DevOps Engineer
 
 ## 📞 Support
 
-For support, email support@thesoulapp.com or join our Slack channel. 
+For support, email support@thesoulapp.com or join our Slack channel.
+
+# Install AWS CLI if not already installed
+# Configure AWS credentials
+aws configure
+
+# Run the AWS setup script
+./scripts/aws-setup.sh
+
+# Initialize and apply Terraform
+cd terraform
+terraform init
+terraform plan
+terraform apply 
