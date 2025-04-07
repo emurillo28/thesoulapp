@@ -1,5 +1,8 @@
 package com.thesoulapp.config;
 
+import com.amazonaws.auth.DefaultAWSCredentialsProviderChain;
+import com.amazonaws.services.cognitoidp.AWSCognitoIdentityProvider;
+import com.amazonaws.services.cognitoidp.AWSCognitoIdentityProviderClientBuilder;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -24,6 +27,9 @@ public class AwsConfig {
 
     @Value("${aws.secret-key}")
     private String secretKey;
+
+    @Value("${aws.cognito.region:us-west-1}")
+    private String cognitoRegion;
 
     private AwsBasicCredentials awsCredentials() {
         return AwsBasicCredentials.create(accessKey, secretKey);
@@ -75,5 +81,13 @@ public class AwsConfig {
             .region(Region.of(region))
             .credentialsProvider(StaticCredentialsProvider.create(awsCredentials()))
             .build();
+    }
+
+    @Bean
+    public AWSCognitoIdentityProvider cognitoClient() {
+        return AWSCognitoIdentityProviderClientBuilder.standard()
+                .withCredentials(new DefaultAWSCredentialsProviderChain())
+                .withRegion(cognitoRegion)
+                .build();
     }
 } 

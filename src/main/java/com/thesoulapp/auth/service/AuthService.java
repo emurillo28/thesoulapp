@@ -10,6 +10,8 @@ import com.thesoulapp.auth.dto.SignUpRequest;
 import com.thesoulapp.auth.dto.VerificationRequest;
 import com.thesoulapp.user.model.User;
 import com.thesoulapp.user.repository.UserRepository;
+import com.thesoulapp.subscription.model.Subscription;
+import com.thesoulapp.subscription.repository.SubscriptionRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -19,6 +21,10 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
+import java.time.LocalDateTime;
+import com.thesoulapp.auth.service.CognitoService;
+import com.amazonaws.services.cognitoidp.model.AdminInitiateAuthResult;
+import com.amazonaws.services.cognitoidp.model.AuthenticationResultType;
 
 @Service
 @RequiredArgsConstructor
@@ -30,6 +36,8 @@ public class AuthService {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
     private final JwtService jwtService;
+    private final SubscriptionRepository subscriptionRepository;
+    private final CognitoService cognitoService;
 
     @Value("${aws.cognito.userPoolId}")
     private String userPoolId;
@@ -45,141 +53,105 @@ public class AuthService {
 
     @Transactional
     public AuthResponse signUp(SignUpRequest request) {
-        // First, create user in Cognito with additional attributes
-        SignUpRequest cognitoRequest = new SignUpRequest()
-                .withClientId(clientId)
-                .withUsername(request.getEmail())
-                .withPassword(request.getPassword());
-
-        Map<String, String> attributes = new HashMap<>();
-        attributes.put("email", request.getEmail());
-        attributes.put("name", request.getFullName());
-        attributes.put("custom:role", request.getRole().name());
-        attributes.put("phone_number", request.getPhoneNumber());
-
-        cognitoRequest.setUserAttributes(
-            attributes.entrySet().stream()
-                .map(e -> new AttributeType().withName(e.getKey()).withValue(e.getValue()))
-                .toList()
-        );
-
         try {
-            cognitoClient.signUp(cognitoRequest);
+            // Register with Cognito first
+            String cognitoUserId = cognitoService.signUp(
+                request.getEmail(), 
+                request.getPassword(),
+                request.getName()
+            );
             
-            // Send verification code via SMS
-            if (request.getPhoneNumber() != null) {
-                sendVerificationSMS(request.getPhoneNumber());
-            }
-
-            // Send verification email
-            sendVerificationEmail(request.getEmail());
-
-            // Create local user (unverified)
+            // Create local user
             User user = new User();
             user.setEmail(request.getEmail());
-            user.setFullName(request.getFullName());
-            user.setRole(request.getRole());
-            user.setPhoneNumber(request.getPhoneNumber());
-            user.setPassword(passwordEncoder.encode(request.getPassword()));
-            user.setVerified(false);
-            userRepository.save(user);
-
-            return new AuthResponse(null, user); // No token until verified
-
-        } catch (UsernameExistsException e) {
-            throw new RuntimeException("Email already registered");
+            user.setName(request.getName());
+            user.setRole(UserRole.USER);
+            user.setExternalId(cognitoUserId); // Store Cognito user ID
+            
+            User savedUser = userRepository.save(user);
+            
+            // Create subscription
+            Subscription subscription = new Subscription();
+            subscription.setUser(savedUser);
+            subscription.setStartDate(LocalDateTime.now());
+            subscription.setActive(true);
+            subscriptionRepository.save(subscription);
+            
+            // No token returned until user confirms email
+            return new AuthResponse(null, savedUser);
+            
+        } catch (Exception e) {
+            throw new RuntimeException("Registration failed: " + e.getMessage(), e);
         }
     }
 
-    public AuthResponse verifyUser(VerificationRequest request) {
+    @Transactional
+    public AuthResponse confirmSignUp(String email, String confirmationCode) {
         try {
-            ConfirmSignUpRequest confirmRequest = new ConfirmSignUpRequest()
-                .withClientId(clientId)
-                .withUsername(request.getEmail())
-                .withConfirmationCode(request.getCode());
-
-            cognitoClient.confirmSignUp(confirmRequest);
-
-            // Update local user
-            User user = userRepository.findByEmail(request.getEmail())
-                .orElseThrow(() -> new RuntimeException("User not found"));
-            user.setVerified(true);
-            userRepository.save(user);
-
+            // Confirm with Cognito
+            cognitoService.confirmSignUp(email, confirmationCode);
+            
+            // Get local user
+            User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("User not found: " + email));
+            
             // Generate JWT token
-            String token = jwtService.generateToken(user);
-            return new AuthResponse(token, user);
-
-        } catch (CodeMismatchException e) {
-            throw new RuntimeException("Invalid verification code");
+            String jwtToken = jwtService.generateToken(user);
+            
+            return new AuthResponse(jwtToken, user);
+        } catch (Exception e) {
+            throw new RuntimeException("Confirmation failed: " + e.getMessage(), e);
         }
     }
 
+    @Transactional
     public AuthResponse login(LoginRequest request) {
         try {
-            // Check if user is verified
+            // Authenticate with Cognito
+            AdminInitiateAuthResult authResult = cognitoService.authenticate(request.getEmail(), request.getPassword());
+            AuthenticationResultType resultType = authResult.getAuthenticationResult();
+            
+            // Get or create local user
             User user = userRepository.findByEmail(request.getEmail())
-                .orElseThrow(() -> new RuntimeException("User not found"));
-
-            if (!user.isVerified()) {
-                throw new RuntimeException("Please verify your account first");
-            }
-
-            AdminInitiateAuthRequest authRequest = new AdminInitiateAuthRequest()
-                .withAuthFlow("ADMIN_NO_SRP_AUTH")
-                .withUserPoolId(userPoolId)
-                .withClientId(clientId)
-                .withAuthParameters(Map.of(
-                    "USERNAME", request.getEmail(),
-                    "PASSWORD", request.getPassword()
-                ));
-
-            AdminInitiateAuthResult authResult = cognitoClient.adminInitiateAuth(authRequest);
-
-            // Update last login
-            user.setLastLoginAt(java.time.LocalDateTime.now());
-            userRepository.save(user);
-
-            String token = jwtService.generateToken(user);
-            return new AuthResponse(token, user);
-
-        } catch (NotAuthorizedException | UserNotFoundException e) {
-            throw new RuntimeException("Invalid credentials");
+                    .orElseGet(() -> {
+                        // Create a new user if they don't exist locally yet
+                        User newUser = new User();
+                        newUser.setEmail(request.getEmail());
+                        newUser.setName(request.getEmail().split("@")[0]); // Default name from email
+                        newUser.setRole(UserRole.USER);
+                        return userRepository.save(newUser);
+                    });
+            
+            // Generate our JWT token
+            String jwtToken = jwtService.generateToken(user);
+            
+            return new AuthResponse(jwtToken, user);
+        } catch (Exception e) {
+            throw new RuntimeException("Authentication failed: " + e.getMessage(), e);
         }
     }
 
+    @Transactional
     public void resetPassword(String email) {
         try {
-            // First, check if user exists and is verified
-            User user = userRepository.findByEmail(email)
-                .orElseThrow(() -> new RuntimeException("User not found"));
+            // Check if user exists locally
+            userRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("User not found with email: " + email));
+            
+            // Initiate forgot password flow in Cognito
+            cognitoService.forgotPassword(email);
+        } catch (Exception e) {
+            throw new RuntimeException("Password reset failed: " + e.getMessage(), e);
+        }
+    }
 
-            if (!user.isVerified()) {
-                throw new RuntimeException("Please verify your account first");
-            }
-
-            // Generate reset code
-            String resetCode = UUID.randomUUID().toString().substring(0, 8);
-
-            // Store reset code in Cognito custom attributes
-            AdminUpdateUserAttributesRequest updateRequest = new AdminUpdateUserAttributesRequest()
-                .withUserPoolId(userPoolId)
-                .withUsername(email)
-                .withUserAttributes(
-                    new AttributeType()
-                        .withName("custom:resetCode")
-                        .withValue(resetCode)
-                );
-            cognitoClient.adminUpdateUserAttributes(updateRequest);
-
-            // Send reset code via email and SMS
-            sendPasswordResetEmail(email, resetCode);
-            if (user.getPhoneNumber() != null) {
-                sendPasswordResetSMS(user.getPhoneNumber(), resetCode);
-            }
-
-        } catch (UserNotFoundException e) {
-            throw new RuntimeException("User not found");
+    @Transactional
+    public void confirmResetPassword(String email, String confirmationCode, String newPassword) {
+        try {
+            // Confirm password reset in Cognito
+            cognitoService.confirmForgotPassword(email, confirmationCode, newPassword);
+        } catch (Exception e) {
+            throw new RuntimeException("Password reset confirmation failed: " + e.getMessage(), e);
         }
     }
 

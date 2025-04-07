@@ -5,6 +5,7 @@ import lombok.Getter;
 import lombok.Setter;
 import java.time.LocalDateTime;
 import java.util.UUID;
+import jakarta.persistence.*;
 
 @Getter
 @Setter
@@ -25,7 +26,11 @@ public class Answer {
     private String deviceInfo;
     private String location;
     private String ipAddress;
-    
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_assessment_id", nullable = false)
+    private UserAssessment userAssessment;
+
     // Domain methods
     public boolean isValid() {
         return validationStatus != null && 
@@ -59,5 +64,13 @@ public class Answer {
     public boolean isFromAPI() {
         return source != null && 
                source.equals("API");
+    }
+
+    public UserAssessment getUserAssessment() {
+        return userAssessment;
+    }
+
+    public void setUserAssessment(UserAssessment userAssessment) {
+        this.userAssessment = userAssessment;
     }
 } 

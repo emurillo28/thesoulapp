@@ -1,0 +1,112 @@
+[
+  {
+    "Namespace": "aws:elasticbeanstalk:application:environment",
+    "OptionName": "SPRING_PROFILES_ACTIVE",
+    "Value": "prod"
+  },
+  {
+    "Namespace": "aws:elasticbeanstalk:application:environment",
+    "OptionName": "SERVER_PORT",
+    "Value": "5000"
+  },
+  {
+    "Namespace": "aws:elasticbeanstalk:application:environment",
+    "OptionName": "APP_API_BASE_URL",
+    "Value": "https://api.thesoulapp.com/api"
+  },
+  {
+    "Namespace": "aws:elasticbeanstalk:application:environment",
+    "OptionName": "APP_WEBSOCKET_URL",
+    "Value": "wss://api.thesoulapp.com/ws"
+  },
+  {
+    "Namespace": "aws:elasticbeanstalk:application:environment",
+    "OptionName": "FEATURE_TASKS_ENABLED",
+    "Value": "false"
+  },
+  {
+    "Namespace": "aws:elasticbeanstalk:application:environment",
+    "OptionName": "FEATURE_BLOG_ENABLED",
+    "Value": "false"
+  },
+  {
+    "Namespace": "aws:elasticbeanstalk:application:environment",
+    "OptionName": "FEATURE_INSIGHTS_ENABLED",
+    "Value": "false"
+  },
+  {
+    "Namespace": "aws:elasticbeanstalk:application:environment",
+    "OptionName": "RDS_JDBC_URL",
+    "Value": "jdbc:postgresql://YOUR-RDS-ENDPOINT:5432/thesoulapp"
+  },
+  {
+    "Namespace": "aws:elasticbeanstalk:application:environment",
+    "OptionName": "RDS_USERNAME",
+    "Value": "postgres"
+  },
+  {
+    "Namespace": "aws:elasticbeanstalk:application:environment",
+    "OptionName": "RDS_PASSWORD",
+    "Value": "PLACEHOLDER-UPDATE-IN-CONSOLE"
+  },
+  {
+    "Namespace": "aws:elasticbeanstalk:application:environment",
+    "OptionName": "COGNITO_USER_POOL_ID",
+    "Value": "PLACEHOLDER-UPDATE-IN-CONSOLE"
+  },
+  {
+    "Namespace": "aws:elasticbeanstalk:application:environment",
+    "OptionName": "COGNITO_CLIENT_ID",
+    "Value": "PLACEHOLDER-UPDATE-IN-CONSOLE"
+  },
+  {
+    "Namespace": "aws:elasticbeanstalk:application:environment",
+    "OptionName": "APP_JWT_SECRET",
+    "Value": "PLACEHOLDER-UPDATE-IN-CONSOLE"
+  },
+  {
+    "Namespace": "aws:elasticbeanstalk:application:environment",
+    "OptionName": "SSL_ENABLED",
+    "Value": "false"
+  },
+  {
+    "Namespace": "aws:elasticbeanstalk:environment",
+    "OptionName": "EnvironmentType",
+    "Value": "LoadBalanced"
+  },
+  {
+    "Namespace": "aws:elasticbeanstalk:environment",
+    "OptionName": "LoadBalancerType",
+    "Value": "application"
+  },
+  {
+    "Namespace": "aws:elasticbeanstalk:environment:proxy",
+    "OptionName": "ProxyServer",
+    "Value": "nginx"
+  },
+  {
+    "Namespace": "aws:elasticbeanstalk:container:tomcat:jvmoptions",
+    "OptionName": "Xms",
+    "Value": "512m"
+  },
+  {
+    "Namespace": "aws:elasticbeanstalk:container:tomcat:jvmoptions",
+    "OptionName": "Xmx",
+    "Value": "1024m"
+  },
+  {
+    "Namespace": "aws:autoscaling:asg",
+    "OptionName": "MinSize",
+    "Value": "1"
+  },
+  {
+    "Namespace": "aws:autoscaling:asg",
+    "OptionName": "MaxSize",
+    "Value": "4"
+  },
+  {
+    "Namespace": "aws:ec2:instances",
+    "OptionName": "InstanceTypes",
+    "Value": "t3.small"
+  }
+] 

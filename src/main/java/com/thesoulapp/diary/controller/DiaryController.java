@@ -98,4 +98,34 @@ public class DiaryController {
                 })
                 .orElse(ResponseEntity.notFound().build());
     }
+
+    @PutMapping("/{id}/share")
+    public ResponseEntity<DiaryEntry> updateSharingSettings(
+            @PathVariable Long id,
+            @RequestBody SharingSettingsDto settingsDto,
+            Authentication authentication) {
+
+        return diaryEntryRepository.findById(id)
+                .map(entry -> {
+                    User user = userRepository.findByEmail(authentication.getName())
+                            .orElseThrow(() -> new RuntimeException("User not found"));
+
+                    if (!entry.getUser().getId().equals(user.getId())) {
+                        throw new RuntimeException("Not authorized to modify this entry");
+                    }
+
+                    entry.setSharedWithTherapist(settingsDto.isShare());
+                    entry.setSharedUntil(settingsDto.getShareUntil()); // Can be null
+                    
+                    return ResponseEntity.ok(diaryEntryRepository.save(entry));
+                })
+                .orElse(ResponseEntity.notFound().build());
+    }
+}
+
+// --- DTO for Sharing Settings ---
+@lombok.Data
+class SharingSettingsDto {
+    private boolean share;
+    private LocalDateTime shareUntil; // Optional
 } 

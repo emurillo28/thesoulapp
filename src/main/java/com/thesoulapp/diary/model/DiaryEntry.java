@@ -32,6 +32,11 @@ public class DiaryEntry {
     @Column
     private LocalDateTime lastModifiedAt;
 
+    @Column(nullable = false)
+    private boolean sharedWithTherapist = false; // Default to not shared
+
+    private LocalDateTime sharedUntil; // Optional expiry for sharing
+
     @PrePersist
     protected void onCreate() {
         createdAt = LocalDateTime.now();
@@ -41,5 +46,21 @@ public class DiaryEntry {
     @PreUpdate
     protected void onUpdate() {
         lastModifiedAt = LocalDateTime.now();
+    }
+
+    public boolean isSharedWithTherapist() {
+        return sharedWithTherapist;
+    }
+
+    public void setSharedWithTherapist(boolean sharedWithTherapist) {
+        this.sharedWithTherapist = sharedWithTherapist;
+    }
+
+    public LocalDateTime getSharedUntil() {
+        return sharedUntil;
+    }
+
+    public void setSharedUntil(LocalDateTime sharedUntil) {
+        this.sharedUntil = sharedUntil;
     }
 } 
