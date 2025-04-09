@@ -22,13 +22,16 @@ jobs:
           distribution: 'corretto'
 
       - name: Build with Gradle
-        run: ./gradlew build
+        run:  chmod +x ./gradlew && ./gradlew build
+        
+      - name: Rename Jar for Consistent Name
+        run: mv build/libs/*.jar build/libs/app.jar
 
       - name: Upload build artifact
         uses: actions/upload-artifact@v3
         with:
           name: build-artifact
-          path: build/libs/*.jar
+          path: build/libs/app.jar
 
   deploy:
     needs: build
