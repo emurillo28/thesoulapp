@@ -15,6 +15,8 @@ A Spring Boot backend application for The Soul App, providing therapy and mental
 
 ## 🛠 Tech Stack
 
+- !! Most of the development was made with the aid of AI !!
+- Cursor IDE
 - Java 21
 - Spring Boot 3.x
 - Spring Security
@@ -25,7 +27,8 @@ A Spring Boot backend application for The Soul App, providing therapy and mental
   - SNS (SMS Notifications)
   - DynamoDB (NoSQL Database)
   - CloudWatch (Monitoring)
-- MySQL (RDS)
+  - Beanstalk (Compute)
+- Postgresql (RDS)
 - JWT Authentication
 - Gradle Build System
 
@@ -35,54 +38,6 @@ A Spring Boot backend application for The Soul App, providing therapy and mental
 - Gradle
 - AWS Account
 - MySQL Database
-- Docker (optional)
-
-## 🔧 Configuration
-
-1. Clone the repository:
-```bash
-git clone https://github.com/yourusername/thesoulapp-backend.git
-```
-
-2. Configure AWS credentials in `application.yml`:
-```yaml
-aws:
-  region: your-region
-  access-key: your-access-key
-  secret-key: your-secret-key
-```
-
-3. Set up environment variables:
-```bash
-export AWS_REGION=your-region
-export AWS_ACCESS_KEY=your-access-key
-export AWS_SECRET_KEY=your-secret-key
-export COGNITO_USER_POOL_ID=your-user-pool-id
-export COGNITO_CLIENT_ID=your-client-id
-export SES_SOURCE_EMAIL=your-verified-email
-export SNS_VERIFICATION_TOPIC=topic-arn
-export SNS_NOTIFICATION_TOPIC=topic-arn
-export JWT_SECRET=your-secure-secret
-```
-
-## 🏗 Building the Project
-
-```bash
-./gradlew build
-```
-
-## 🚀 Running the Application
-
-```bash
-./gradlew bootRun
-```
-
-## 📦 Docker Deployment
-
-```bash
-docker build -t thesoulapp-backend .
-docker run -p 8080:8080 thesoulapp-backend
-```
 
 ## 🔐 Security
 
