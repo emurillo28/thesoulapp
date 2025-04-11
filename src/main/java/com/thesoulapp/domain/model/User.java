@@ -1,66 +1,139 @@
 package com.thesoulapp.domain.model;
 
-import lombok.Builder;
-import lombok.Getter;
-import lombok.Setter;
-import java.time.LocalDateTime;
-import java.util.UUID;
+import com.thesoulapp.domain.valueobject.Email;
+import jakarta.persistence.*;
+import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
-import jakarta.persistence.Column;
+import jakarta.validation.constraints.NotNull;
+import lombok.*;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.userdetails.UserDetails;
 
+import java.time.LocalDateTime;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
+
+@Entity
+@Table(name = "users")
 @Getter
-@Setter
-@Builder
-public class User {
-    private UUID id;
-    private String email;
+@NoArgsConstructor
+@AllArgsConstructor(access = AccessLevel.PRIVATE)
+@Builder(toBuilder = true)
+public class User extends BaseEntity implements UserDetails {
+
+    // --- Value Objects ---    
+    @Embedded
+    @Valid
+    @NotNull
+    private Email email;
+
+    @NotBlank(message = "Name cannot be blank")
+    @Column(nullable = false)
+    private String name;
+
+    // --- Other Attributes --- 
+    @Column(nullable = false)
+    @NotBlank
     private String passwordHash;
-    private String firstName;
-    private String lastName;
-    private UserRole role;
-    private UserStatus status;
-    private String phoneNumber;
-    private boolean emailVerified;
-    private boolean phoneVerified;
-    private LocalDateTime createdAt;
-    private LocalDateTime updatedAt;
-    private LocalDateTime lastLoginAt;
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    @NotNull
+    private UserRole role = UserRole.USER;
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    @NotNull
+    private UserStatus status = UserStatus.PENDING;
+
+    @Column(nullable = false)
+    private boolean emailVerified = false;
+
     private String avatarUrl;
     private String preferredLanguage;
     private String timezone;
     
-    @NotBlank
-    @Column(nullable = false)
-    private String name;
+    private String externalId;
+
+    private LocalDateTime lastLoginAt;
     
-    // Domain methods
-    public void verifyEmail() {
-        this.emailVerified = true;
-        this.updatedAt = LocalDateTime.now();
+    // --- Relationships --- 
+    @OneToOne(mappedBy = "user", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
+    private Subscription subscription;
+    
+    @OneToMany(mappedBy = "user", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<DiaryEntry> diaryEntries;
+    
+    @OneToMany(mappedBy = "user", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<UserAssessment> userAssessments;
+
+    // --- UserDetails Implementation --- 
+    @Override
+    public Collection<? extends GrantedAuthority> getAuthorities() {
+        return Collections.singletonList(new SimpleGrantedAuthority("ROLE_" + role.name()));
+    }
+
+    @Override
+    public String getPassword() {
+        return passwordHash;
+    }
+
+    @Override
+    public String getUsername() {
+        return email.getValue();
+    }
+
+    @Override
+    public boolean isAccountNonExpired() {
+        return true;
+    }
+
+    @Override
+    public boolean isAccountNonLocked() {
+        return status != UserStatus.LOCKED;
+    }
+
+    @Override
+    public boolean isCredentialsNonExpired() {
+        return true;
+    }
+
+    @Override
+    public boolean isEnabled() {
+        return status == UserStatus.ACTIVE;
+    }
+
+    // --- Domain State Query Methods --- 
+    public boolean hasVerifiedEmail() {
+        return this.emailVerified;
+    }
+
+    // --- State Mutating Methods --- 
+    public void markEmailAsVerified() {
+        if (!this.emailVerified) {
+            this.emailVerified = true;
+        }
     }
     
-    public void verifyPhone() {
-        this.phoneVerified = true;
-        this.updatedAt = LocalDateTime.now();
-    }
-    
-    public void updateLastLogin() {
+    public void recordLogin() {
         this.lastLoginAt = LocalDateTime.now();
     }
     
-    public boolean isActive() {
-        return status == UserStatus.ACTIVE;
-    }
-    
-    public boolean isFullyVerified() {
-        return emailVerified && phoneVerified;
+    public void changeStatus(UserStatus newStatus) {
+        this.status = newStatus;
     }
 
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
+    // --- Helper method to link Subscription --- 
+    public void setSubscription(Subscription subscription) {
+        if (subscription == null) {
+            if (this.subscription != null) {
+                this.subscription.setUser(null);
+            }
+        } else {
+            subscription.setUser(this);
+        }
+        this.subscription = subscription;
     }
 } 

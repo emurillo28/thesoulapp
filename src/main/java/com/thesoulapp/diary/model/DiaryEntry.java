@@ -1,29 +1,38 @@
 package com.thesoulapp.diary.model;
 
-import com.thesoulapp.user.model.User;
+import com.thesoulapp.domain.model.BaseEntity;
+import com.thesoulapp.domain.model.User;
 import jakarta.persistence.*;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+import lombok.*;
+
 import java.time.LocalDateTime;
 
-@Data
-@NoArgsConstructor
 @Entity
 @Table(name = "diary_entries")
-public class DiaryEntry {
+@Getter
+@NoArgsConstructor
+@AllArgsConstructor(access = AccessLevel.PRIVATE)
+@Builder
+public class DiaryEntry extends BaseEntity {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)
+    @NotNull
     private User user;
 
     @Column(nullable = false, columnDefinition = "TEXT")
+    @NotBlank(message = "Diary content cannot be blank")
     private String content;
 
     @Column(nullable = false)
     @Enumerated(EnumType.STRING)
+    @NotNull(message = "Mood must be selected")
     private MoodType mood;
 
     @Column(nullable = false)
@@ -33,9 +42,9 @@ public class DiaryEntry {
     private LocalDateTime lastModifiedAt;
 
     @Column(nullable = false)
-    private boolean sharedWithTherapist = false; // Default to not shared
+    private boolean sharedWithTherapist = false;
 
-    private LocalDateTime sharedUntil; // Optional expiry for sharing
+    private LocalDateTime sharedUntil;
 
     @PrePersist
     protected void onCreate() {
@@ -62,5 +71,19 @@ public class DiaryEntry {
 
     public void setSharedUntil(LocalDateTime sharedUntil) {
         this.sharedUntil = sharedUntil;
+    }
+
+    public void updateContent(String newContent, MoodType newMood) {
+        this.content = newContent;
+        this.mood = newMood;
+    }
+
+    public void updateSharing(boolean share, LocalDateTime until) {
+        this.sharedWithTherapist = share;
+        this.sharedUntil = until;
+    }
+
+    void setUser(User user) {
+        this.user = user;
     }
 } 

@@ -1,59 +1,93 @@
 package com.thesoulapp.domain.model;
 
-import lombok.Builder;
-import lombok.Getter;
-import lombok.Setter;
+import jakarta.persistence.*;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.PositiveOrZero;
+import lombok.*;
+
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
+@Entity
+@Table(name = "surveys")
 @Getter
-@Setter
+@NoArgsConstructor
+@AllArgsConstructor(access = AccessLevel.PRIVATE)
 @Builder
-public class Survey {
+public class Survey extends BaseEntity {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
+
+    @Column(nullable = false)
+    @NotBlank(message = "Survey title cannot be blank")
     private String title;
+
+    @Column(columnDefinition = "TEXT")
     private String description;
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    @NotNull
     private SurveyType type;
-    private SurveyStatus status;
-    private List<Question> questions;
-    private int estimatedDuration;
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    @NotNull
+    private SurveyStatus status = SurveyStatus.DRAFT; // Default to draft
+
+    @OneToMany(mappedBy = "survey", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    @OrderBy("orderIndex ASC") // Maintain question order
+    private List<Question> questions = new ArrayList<>();
+
+    @PositiveOrZero
+    private int estimatedDurationMinutes;
+
     private String category;
-    private boolean isRequired;
-    private LocalDateTime createdAt;
-    private LocalDateTime updatedAt;
+    private boolean required = false;
     private LocalDateTime expiresAt;
-    private String createdBy;
+    private String createdByUserId; // Link to user ID who created it
     private String version;
-    private List<String> tags;
-    private int minimumScore;
-    private int maximumScore;
-    private String scoringAlgorithm;
-    
-    // Domain methods
+
+    // --- Domain State Query Methods ---
     public boolean isExpired() {
         return expiresAt != null && LocalDateTime.now().isAfter(expiresAt);
     }
-    
-    public boolean isActive() {
+
+    public boolean isPublished() {
         return status == SurveyStatus.ACTIVE && !isExpired();
     }
-    
-    public void activate() {
-        this.status = SurveyStatus.ACTIVE;
-        this.updatedAt = LocalDateTime.now();
-    }
-    
-    public void deactivate() {
-        this.status = SurveyStatus.INACTIVE;
-        this.updatedAt = LocalDateTime.now();
+
+    // --- State Mutating Methods (Called from Service Layer) ---
+    public void publish() {
+        if (this.status == SurveyStatus.DRAFT) { // Ensure can only publish from draft
+            this.status = SurveyStatus.ACTIVE;
+            // PreUpdate handles updatedAt
+        }
     }
     
     public void archive() {
-        this.status = SurveyStatus.ARCHIVED;
-        this.updatedAt = LocalDateTime.now();
+         this.status = SurveyStatus.ARCHIVED;
+         // PreUpdate handles updatedAt
     }
     
+    // --- Helper Methods for Relationship Management ---
+    public void addQuestion(Question question) {
+        questions.add(question);
+        question.setSurvey(this);
+        // Potentially set orderIndex here
+    }
+
+    public void removeQuestion(Question question) {
+        questions.remove(question);
+        question.setSurvey(null);
+    }
+
+    // Domain methods
     public void updateVersion(String newVersion) {
         this.version = newVersion;
         this.updatedAt = LocalDateTime.now();

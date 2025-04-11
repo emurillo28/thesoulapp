@@ -37,7 +37,7 @@
   {
     "Namespace": "aws:elasticbeanstalk:application:environment",
     "OptionName": "RDS_JDBC_URL",
-    "Value": "jdbc:postgresql://YOUR-RDS-ENDPOINT:5432/thesoulapp"
+    "Value": "jdbc:postgresql://thesoulappdb.che8kc4o6www.us-west-1.rds.amazonaws.com:5432/thesoulapp"
   },
   {
     "Namespace": "aws:elasticbeanstalk:application:environment",
