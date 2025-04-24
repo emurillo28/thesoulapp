@@ -12,9 +12,9 @@ import java.time.LocalDateTime;
 @Entity
 @Table(name = "diary_entries")
 @Getter
-@NoArgsConstructor
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
-@Builder
+@Builder(toBuilder = true)
 public class DiaryEntry extends BaseEntity {
 
     @Id
@@ -44,6 +44,7 @@ public class DiaryEntry extends BaseEntity {
     @Column(nullable = false)
     private boolean sharedWithTherapist = false;
 
+    @Column
     private LocalDateTime sharedUntil;
 
     @PrePersist
@@ -61,26 +62,24 @@ public class DiaryEntry extends BaseEntity {
         return sharedWithTherapist;
     }
 
-    public void setSharedWithTherapist(boolean sharedWithTherapist) {
-        this.sharedWithTherapist = sharedWithTherapist;
+    public boolean isCurrentlyShared() {
+        return sharedWithTherapist && 
+               (sharedUntil == null || sharedUntil.isAfter(LocalDateTime.now()));
     }
 
-    public LocalDateTime getSharedUntil() {
-        return sharedUntil;
+    public void shareWithTherapist(LocalDateTime until) {
+        this.sharedWithTherapist = true;
+        this.sharedUntil = until;
     }
 
-    public void setSharedUntil(LocalDateTime sharedUntil) {
-        this.sharedUntil = sharedUntil;
+    public void stopSharing() {
+        this.sharedWithTherapist = false;
+        this.sharedUntil = null;
     }
 
     public void updateContent(String newContent, MoodType newMood) {
         this.content = newContent;
         this.mood = newMood;
-    }
-
-    public void updateSharing(boolean share, LocalDateTime until) {
-        this.sharedWithTherapist = share;
-        this.sharedUntil = until;
     }
 
     void setUser(User user) {

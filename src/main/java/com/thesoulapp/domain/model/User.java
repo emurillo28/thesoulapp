@@ -18,7 +18,7 @@ import java.util.List;
 @Entity
 @Table(name = "users")
 @Getter
-@NoArgsConstructor
+@NoArgsConstructor(access = AccessLevel.PROTECTED) // Protected for JPA
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 @Builder(toBuilder = true)
 public class User extends BaseEntity implements UserDetails {
@@ -51,12 +51,19 @@ public class User extends BaseEntity implements UserDetails {
     @Column(nullable = false)
     private boolean emailVerified = false;
 
+    @Column
     private String avatarUrl;
+
+    @Column
     private String preferredLanguage;
+
+    @Column
     private String timezone;
     
+    @Column
     private String externalId;
 
+    @Column
     private LocalDateTime lastLoginAt;
     
     // --- Relationships --- 

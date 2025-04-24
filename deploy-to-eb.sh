@@ -8,7 +8,7 @@ set -e
 # Variables
 APP_NAME="thesoulapp"
 ENV_NAME="production"
-REGION="us-east-1"  # Change as needed
+REGION="us-west-1" 
 PACKAGE_NAME="${APP_NAME}.jar"
 
 echo "=== Building the application ==="
@@ -51,7 +51,7 @@ else
     aws elasticbeanstalk create-environment \
         --application-name ${APP_NAME} \
         --environment-name ${ENV_NAME} \
-        --solution-stack-name "64bit Amazon Linux 2 v3.5.0 running Corretto 17" \
+        --solution-stack-name "64bit Amazon Linux 2 v3.5.0 running Corretto 21" \
         --version-label ${VERSION} \
         --region ${REGION} \
         --option-settings file://elasticbeanstalk-config.json

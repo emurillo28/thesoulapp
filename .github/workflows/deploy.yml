@@ -48,11 +48,11 @@ jobs:
         with:
           aws_access_key: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws_secret_key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          application_name: soulapp-backend
-          environment_name: soulapp-backend-env
+          application_name: TheSoulApp
+          environment_name: TheSoulApp-env-2 
           version_label: v-${{ github.run_number }}
           region: ${{ secrets.AWS_REGION }}
-          bucket_name: soulapp-deployments
+          bucket_name: elasticbeanstalk-us-west-1-649986366328
           bucket_key: spring-app-${{ github.run_number }}.jar
           deployment_package: build/libs/*.jar
 

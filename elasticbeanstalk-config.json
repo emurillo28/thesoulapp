@@ -1,4 +1,5 @@
 [
+  // ==== Application Environment Variables ====
   {
     "Namespace": "aws:elasticbeanstalk:application:environment",
     "OptionName": "SPRING_PROFILES_ACTIVE",
@@ -9,16 +10,20 @@
     "OptionName": "SERVER_PORT",
     "Value": "5000"
   },
+
+  // ==== API & WebSocket URLs ====
   {
     "Namespace": "aws:elasticbeanstalk:application:environment",
     "OptionName": "APP_API_BASE_URL",
-    "Value": "https://api.thesoulapp.com/api"
+    "Value": "https://api.thesoulapp.org/api"
   },
   {
     "Namespace": "aws:elasticbeanstalk:application:environment",
     "OptionName": "APP_WEBSOCKET_URL",
-    "Value": "wss://api.thesoulapp.com/ws"
+    "Value": "wss://api.thesoulapp.org/ws"
   },
+
+  // ==== Feature Flags ====
   {
     "Namespace": "aws:elasticbeanstalk:application:environment",
     "OptionName": "FEATURE_TASKS_ENABLED",
@@ -34,6 +39,8 @@
     "OptionName": "FEATURE_INSIGHTS_ENABLED",
     "Value": "false"
   },
+
+  // ==== RDS Configuration ====
   {
     "Namespace": "aws:elasticbeanstalk:application:environment",
     "OptionName": "RDS_JDBC_URL",
@@ -49,6 +56,8 @@
     "OptionName": "RDS_PASSWORD",
     "Value": "PLACEHOLDER-UPDATE-IN-CONSOLE"
   },
+
+  // ==== Cognito Configuration ====
   {
     "Namespace": "aws:elasticbeanstalk:application:environment",
     "OptionName": "COGNITO_USER_POOL_ID",
@@ -59,16 +68,22 @@
     "OptionName": "COGNITO_CLIENT_ID",
     "Value": "PLACEHOLDER-UPDATE-IN-CONSOLE"
   },
+
+  // ==== JWT Secret ====
   {
     "Namespace": "aws:elasticbeanstalk:application:environment",
     "OptionName": "APP_JWT_SECRET",
     "Value": "PLACEHOLDER-UPDATE-IN-CONSOLE"
   },
+
+  // ==== SSL & Monitoring ====
   {
     "Namespace": "aws:elasticbeanstalk:application:environment",
     "OptionName": "SSL_ENABLED",
     "Value": "false"
   },
+
+  // ==== Environment Type & Load Balancer ====
   {
     "Namespace": "aws:elasticbeanstalk:environment",
     "OptionName": "EnvironmentType",
@@ -84,6 +99,8 @@
     "OptionName": "ProxyServer",
     "Value": "nginx"
   },
+
+  // ==== JVM Memory Settings ====
   {
     "Namespace": "aws:elasticbeanstalk:container:tomcat:jvmoptions",
     "OptionName": "Xms",
@@ -94,6 +111,8 @@
     "OptionName": "Xmx",
     "Value": "1024m"
   },
+
+  // ==== Auto Scaling ====
   {
     "Namespace": "aws:autoscaling:asg",
     "OptionName": "MinSize",
@@ -104,9 +123,18 @@
     "OptionName": "MaxSize",
     "Value": "4"
   },
+
+  // ==== EC2 Instance Type ====
   {
     "Namespace": "aws:ec2:instances",
     "OptionName": "InstanceTypes",
     "Value": "t3.small"
+  },
+
+  // ==== Optional: Enhanced Health Reporting ====
+  {
+    "Namespace": "aws:elasticbeanstalk:healthreporting:system",
+    "OptionName": "SystemType",
+    "Value": "enhanced"
   }
-] 
+]
