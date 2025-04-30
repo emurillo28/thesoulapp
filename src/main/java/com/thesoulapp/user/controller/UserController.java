@@ -31,5 +31,5 @@ public class UserController {
         return ResponseEntity.ok(userService.updateUserProfile(email, updateDto));
     }
     
-    // Add endpoints for therapist view if needed later, e.g., /api/users/{userId}/profile
+    // TODO: Add endpoints for therapist view if needed later, e.g., /api/users/{userId}/profile
 } 

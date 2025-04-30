@@ -10,13 +10,9 @@ import com.amazonaws.services.sns.AmazonSNS;
 import com.amazonaws.services.sns.AmazonSNSClientBuilder;
 import com.amazonaws.services.simpleemail.AmazonSimpleEmailService;
 import com.amazonaws.services.simpleemail.AmazonSimpleEmailServiceClientBuilder;
-import com.amazonaws.client.builder.AwsClientBuilder;
-import com.amazonaws.services.dynamodb.AmazonDynamoDB;
-import com.amazonaws.services.dynamodb.AmazonDynamoDBClientBuilder;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.Profile;
 
 @Configuration
 public class AwsConfig {
@@ -29,9 +25,6 @@ public class AwsConfig {
 
     @Value("${aws.secretKey}")
     private String secretKey;
-
-    @Value("${aws.dynamodb.endpoint:}")
-    private String dynamoDbEndpoint;
 
     private AWSStaticCredentialsProvider getCredentialsProvider() {
         BasicAWSCredentials awsCredentials = new BasicAWSCredentials(accessKey, secretKey);
@@ -66,26 +59,6 @@ public class AwsConfig {
     public AmazonSimpleEmailService sesClient() {
         return AmazonSimpleEmailServiceClientBuilder.standard()
                 .withRegion(region)
-                .withCredentials(getCredentialsProvider())
-                .build();
-    }
-
-    @Bean
-    @Profile("!local") // Use this for non-local environments
-    public AmazonDynamoDB dynamoDbClient() {
-        return AmazonDynamoDBClientBuilder.standard()
-                .withRegion(region)
-                .withCredentials(getCredentialsProvider())
-                .build();
-    }
-
-    @Bean
-    @Profile("local") // Use this for local development
-    public AmazonDynamoDB localDynamoDbClient() {
-        return AmazonDynamoDBClientBuilder.standard()
-                .withEndpointConfiguration(
-                    new AwsClientBuilder.EndpointConfiguration(dynamoDbEndpoint, region)
-                )
                 .withCredentials(getCredentialsProvider())
                 .build();
     }
