@@ -3,10 +3,10 @@ name: Deploy to AWS Elastic Beanstalk
 on:
   push:
     branches:
-      - v2
+      - master
   pull_request:
     branches:
-      - v2
+      - master
 
 jobs:
   build:
@@ -23,7 +23,8 @@ jobs:
 
       - name: Build with Maven
         run: mvn clean package -DskipTests
-        
+        # The built JAR will be in target/*.jar
+
       - name: Rename Jar for Consistent Name
         run: mv target/*.jar target/app.jar
 
@@ -36,7 +37,7 @@ jobs:
   deploy:
     needs: build
     runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/main'
+    if: github.ref == 'refs/heads/master'
     steps:
       - name: Download build artifact
         uses: actions/download-artifact@v4
@@ -49,12 +50,12 @@ jobs:
           aws_access_key: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws_secret_key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           application_name: TheSoulApp
-          environment_name: TheSoulApp-env-2 
+          environment_name: TheSoulApp-env-2
           version_label: v-${{ github.run_number }}
           region: ${{ secrets.AWS_REGION }}
           bucket_name: elasticbeanstalk-us-west-1-649986366328
           bucket_key: spring-app-${{ github.run_number }}.jar
-          deployment_package: build/libs/*.jar
+          deployment_package: target/app.jar
 
   test:
     runs-on: ubuntu-latest
@@ -83,7 +84,7 @@ jobs:
           project: 'TheSoulApp'
           path: '.'
           format: 'HTML'
-          out: 'reports' 
+          out: 'reports'
 
       - name: Upload dependency check report
         uses: actions/upload-artifact@v3
