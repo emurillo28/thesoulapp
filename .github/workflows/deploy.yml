@@ -3,10 +3,10 @@ name: Deploy to AWS Elastic Beanstalk
 on:
   push:
     branches:
-      - main
+      - v2
   pull_request:
     branches:
-      - main
+      - v2
 
 jobs:
   build:
@@ -21,17 +21,17 @@ jobs:
           java-version: '21'
           distribution: 'corretto'
 
-      - name: Build with Gradle
-        run:  chmod +x ./gradlew && ./gradlew build
+      - name: Build with Maven
+        run: mvn clean package -DskipTests
         
       - name: Rename Jar for Consistent Name
-        run: mv build/libs/*.jar build/libs/app.jar
+        run: mv target/*.jar target/app.jar
 
       - name: Upload build artifact
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: build-artifact
-          path: build/libs/app.jar
+          path: target/app.jar
 
   deploy:
     needs: build
@@ -39,7 +39,7 @@ jobs:
     if: github.ref == 'refs/heads/main'
     steps:
       - name: Download build artifact
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: build-artifact
 
@@ -48,11 +48,11 @@ jobs:
         with:
           aws_access_key: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws_secret_key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          application_name: soulapp-backend
-          environment_name: soulapp-backend-env
+          application_name: TheSoulApp
+          environment_name: TheSoulApp-env-2 
           version_label: v-${{ github.run_number }}
           region: ${{ secrets.AWS_REGION }}
-          bucket_name: soulapp-deployments
+          bucket_name: elasticbeanstalk-us-west-1-649986366328
           bucket_key: spring-app-${{ github.run_number }}.jar
           deployment_package: build/libs/*.jar
 
@@ -69,7 +69,7 @@ jobs:
           distribution: 'corretto'
 
       - name: Run tests
-        run: ./gradlew test
+        run: mvn test
 
   security:
     runs-on: ubuntu-latest
@@ -84,3 +84,9 @@ jobs:
           path: '.'
           format: 'HTML'
           out: 'reports' 
+
+      - name: Upload dependency check report
+        uses: actions/upload-artifact@v3
+        with:
+          name: dependency-check-report
+          path: reports/

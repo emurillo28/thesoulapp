@@ -1,0 +1,38 @@
+name: CI/CD
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build-test-deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4
+        with:
+          java-version: '21'
+          distribution: 'temurin'
+
+      - name: Build with Maven
+        run: ./mvnw clean package -DskipTests=false
+
+      - name: Run tests
+        run: ./mvnw test
+
+      - name: Deploy to AWS Elastic Beanstalk
+        if: github.ref == 'refs/heads/main'
+        uses: einaregilsson/beanstalk-deploy@v21
+        with:
+          aws_access_key: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws_secret_key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          application_name: thesoulapp
+          environment_name: thesoulapp-env
+          region: us-east-1
+          version_label: ${{ github.sha }}
+          deployment_package: target/thesoulapp-0.1.jar 

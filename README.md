@@ -1,79 +1,135 @@
-# The Soul App Backend
+# Soul App Backend
 
-A Spring Boot backend application for The Soul App, providing therapy and mental health services.
+A **portfolio-ready, clean-architecture Spring Boot backend** for a modern mental health platform. This project is designed to demonstrate best practices in backend engineering, security, cloud deployment, and scalable architecture. It is production-oriented, fully documented, and ready for AWS deployment.
 
-## 🚀 Features
+---
 
-- User Authentication & Authorization
-- Therapist-Patient Matching
-- Assessment Management
-- Session Scheduling
-- Payment Processing
-- Blog & Content Management
-- Avatar & Gamification System
-- Notification System
+## 🚀 Project Overview
+- **Purpose:** Provide a robust, secure, and extensible backend for a mental health platform, supporting user management, assessments, calendar events, real-time chat, and payments.
+- **Audience:** Recruiters, technical reviewers, and anyone interested in modern Java backend development.
+- **Cloud Native:** Built for AWS Elastic Beanstalk, RDS PostgreSQL, and Stripe payments, with CI/CD via GitHub Actions.
 
-## 🛠 Tech Stack
+---
 
-- !! Most of the development was made with the aid of AI !!
-- Cursor IDE
-- Java 21
-- Spring Boot 3.x
-- Spring Security
-- AWS Services:
-  - Cognito (Authentication)
-  - S3 (File Storage)
-  - SES (Email Service)
-  - SNS (SMS Notifications)
-  - DynamoDB (NoSQL Database)
-  - CloudWatch (Monitoring)
-  - Beanstalk (Compute)
-- Postgresql (RDS)
-- JWT Authentication
-- Gradle Build System
+## 🏗️ Architecture & Tech Stack
+- **Java 21** & **Spring Boot 3**
+- **Clean Architecture:**
+  - `domain`: Core business entities (User, Assessment, CalendarEvent, Message, Transaction)
+  - `application`: Service interfaces and use cases
+  - `infrastructure`: Persistence, security, Stripe, WebSocket
+  - `web`: REST and WebSocket controllers
+- **Persistence:** Spring Data JPA, PostgreSQL (RDS-ready)
+- **Security:** Spring Security, JWT (stateless, role-based)
+- **API Docs:** Swagger/OpenAPI (springdoc)
+- **DevOps:**
+  - AWS Elastic Beanstalk for deployment
+  - AWS RDS PostgreSQL for database
+  - GitHub Actions for CI/CD
+  - Environment variables for secrets/config
+- **Other:**
+  - Stripe Java SDK for payments
+  - Lombok for boilerplate reduction
+  - WebSocket (STOMP) for real-time chat
 
-## 📋 Prerequisites
+---
 
-- Java 21
-- Gradle
-- AWS Account
-- MySQL Database
+## 🧩 Key Features & Modules
+- **User Management & Auth:**
+  - Registration, login, JWT-based authentication
+  - Roles: PATIENT, THERAPIST, ADMIN
+  - BCrypt password hashing
+- **Assessment Management:**
+  - Therapists create/approve assessments
+  - Questions stored as JSONB
+- **Calendar System:**
+  - CRUD for events (appointments, availability, emotion tracking, personal entries)
+  - Therapists set availability, patients book appointments
+- **Real-Time Chat:**
+  - WebSocket (STOMP) with JWT-secured handshake
+  - Unique chat rooms, persisted message history
+- **Payments:**
+  - Stripe integration for patient payments
+  - Commission logic, transaction logging
+  - Secure endpoints for therapists/admins
+- **API Documentation:**
+  - Interactive Swagger UI at `/swagger-ui.html`
 
-## 🔐 Security
+---
 
-- JWT-based authentication
-- Role-based access control
-- Rate limiting
-- CORS configuration
-- SSL/TLS encryption
-- Input validation
-- SQL injection prevention
+## 🔒 Security & Best Practices
+- **JWT Authentication:** Stateless, secure, role-based access
+- **Password Hashing:** BCrypt
+- **Role Checks:** Enforced at controller/service level
+- **Environment Variables:** All secrets (DB, JWT, Stripe) are externalized
+- **CI/CD:** Automated build, test, and deploy pipeline
+- **CORS:** Configurable for frontend integration
 
-## 📈 Monitoring
+---
 
-- AWS CloudWatch integration
-- Health endpoints
-- Metrics collection
-- Log aggregation
+## ☁️ AWS, CI/CD, & DevOps
+- **Elastic Beanstalk:**
+  - Deploys JAR artifact
+  - Environment variables for DB, JWT, Stripe
+- **RDS PostgreSQL:**
+  - Production DB, connection via env vars
+- **GitHub Actions:**
+  - On push to `main`: build, test, deploy
+  - Uses AWS credentials from GitHub Secrets
+- **Stripe:**
+  - API key via env var
+  - PaymentIntent for secure, PCI-compliant payments
 
-## 🤝 Contributing
+---
 
-1. Fork the repository
-2. Create your feature branch (`git checkout -b feature/AmazingFeature`)
-3. Commit your changes (`git commit -m 'Add some AmazingFeature'`)
-4. Push to the branch (`git push origin feature/AmazingFeature`)
-5. Open a Pull Request
+## ⚖️ Design Decisions & Trade-Offs
+- **Clean Architecture:**
+  - + Testability, separation of concerns, scalability
+  - - More boilerplate, more files
+- **JWT (stateless):**
+  - + Scalable, no session storage
+  - - Requires careful token invalidation on password change
+- **WebSocket with JWT:**
+  - + Secure, real-time, scalable
+  - - More complex handshake/auth logic
+- **Stripe direct charge:**
+  - + Simpler integration
+  - - For production, consider Stripe Connect for payouts
+- **Lombok:**
+  - + Less boilerplate
+  - - IDE/plugin dependency
+- **Swagger/OpenAPI:**
+  - + Easy API exploration
+  - - Requires maintenance as API evolves
 
-## 📝 License
+---
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+## ✅ Review/Study Checklist
+- [ ] Understand clean architecture layering and package structure
+- [ ] Review JWT authentication and role-based security
+- [ ] Explore assessment and calendar event domain logic
+- [ ] Test WebSocket chat with JWT handshake
+- [ ] Review Stripe payment flow and commission logic
+- [ ] Inspect CI/CD workflow and AWS deployment setup
+- [ ] Check Swagger UI for API contract
+- [ ] Review environment variable usage for secrets
+- [ ] Consider test coverage and integration test examples
 
-## 👥 Team
+---
 
-- [Manuel Ernesto Murillo Arce] - Lead Developer
-- [Ernesto Murillo] - Backend Developer
-- [Manuel Arce] - DevOps Engineer
+## 📝 Areas for Improvement / TODOs
+- [ ] Add more integration/unit tests for all modules
+- [ ] Implement Stripe Connect for therapist payouts
+- [ ] Add Stripe webhook endpoint for payment status updates
+- [ ] Add user profile update and password reset endpoints
+- [ ] Add admin dashboard endpoints (analytics, user management)
+- [ ] Add notification system (email/SMS)
+- [ ] Add rate limiting and brute-force protection
+- [ ] Add audit logging for sensitive actions
+- [ ] Improve error handling and validation
+- [ ] Add support for multi-language and time zones
+- [ ] Enhance API versioning and documentation
 
-## 📞 Support
+---
 
-For support, email support@thesoulapp.com or join our Slack channel. 
+## 🙏 Thanks for reviewing!
+This project is designed to be a **showcase of modern backend engineering**. Please use the checklist above to guide your review and note any areas for further study or questions. PRs, issues, and feedback are welcome! 

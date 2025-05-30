@@ -2,10 +2,10 @@ spring:
   application:
     name: thesoulapp
   datasource:
-    url: jdbc:mysql://${DB_HOST:localhost}:${DB_PORT:3306}/${DB_NAME:thesoulapp}
-    username: ${DB_USER:root}
-    password: ${DB_PASSWORD:}
-    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: ${RDS_JDBC_URL:jdbc:postgresql://localhost:5432/thesoulapp}
+    username: ${RDS_USERNAME:postgres}
+    password: ${RDS_PASSWORD:postgres}
+    driver-class-name: org.postgresql.Driver
     hikari:
       maximum-pool-size: 10
       minimum-idle: 5
@@ -16,7 +16,7 @@ spring:
     show-sql: false
     properties:
       hibernate:
-        dialect: org.hibernate.dialect.MySQL8Dialect
+        dialect: org.hibernate.dialect.PostgreSQLDialect
         format_sql: true
   security:
     require-ssl: true
@@ -62,15 +62,6 @@ aws:
     sourceEmail: ${SES_SOURCE_EMAIL:}
     templatePath: templates/email
     maxBulkEmails: 50
-  dynamodb:
-    endpoint: ${DYNAMODB_ENDPOINT:}
-    tables:
-      assessments: ${DYNAMODB_ASSESSMENTS_TABLE:Assessments}
-    autoscaling:
-      enabled: true
-      minCapacity: 1
-      maxCapacity: 10
-      targetUtilization: 70
 
 security:
   cors:
