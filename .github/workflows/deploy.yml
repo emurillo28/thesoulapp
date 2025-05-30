@@ -58,8 +58,6 @@ jobs:
           environment_name: TheSoulApp-env-2
           version_label: v-${{ github.run_number }}
           region: ${{ secrets.AWS_REGION }}
-          bucket_name: elasticbeanstalk-us-west-1-649986366328
-          bucket_key: spring-app-${{ github.run_number }}.jar
           deployment_package: target/app.jar
 
   test:
